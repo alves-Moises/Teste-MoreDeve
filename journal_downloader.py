@@ -5,10 +5,13 @@ import json
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 from time import sleep
+from tkinter import E
 from typing import Dict, List, Tuple
 
 import requests
 
+import input_logic
+import year
 MAIN_FOLDER = Path(__file__).parent.parent
 
 
@@ -60,15 +63,62 @@ class JournalDownloader:
 
     def get_day_journals(self, year: int, month: int, day: int) -> List[str]:
         # TODO: get all journals of a day, returns a list of JSON paths
-        pass
+
+        date = f'{year}-{month}-{day}' # YYYY-MM-DD
+        type(date)
+        editions = request_journals(date, date)
+        
+        list_return=list()
+        for a in range(0, len(editions['diaries'])):
+
+               
+
+            edition = editions['diaries'][a]['edicao']
+            file_name = editions['diaries'][a]['arquivo']
+            
+            list_return.append(self.dump_json())
+            download_jornal(edition, file_name)
+            print(f'nº{a}\n\n')
+
 
     def get_month_journals(self, year: int, month: int) -> List[str]:
         # TODO: get all journals of a month, returns a list of JSON paths
-        pass
+
+        date_ini = f'{year}-{month}-{1}' # YYYY-MM-DD
+        date_end = f'{year}-{month}-{year.days_in_monts(year, month)}'
+
+        editions = request_journals(date_ini, date_end)
+        
+        list_return=list()
+        for a in range(0, len(editions['diaries'])):
+
+               
+
+            edition = editions['diaries'][a]['edicao']
+            file_name = editions['diaries'][a]['arquivo']
+            list_return.append(self.dump_json())
+            download_jornal(edition, file_name)
+            print(f'nº{a}\n\n')
+
 
     def get_year_journals(self, year: int) -> List[str]:
         # TODO: get all journals of a year, returns a list of JSON paths
-        pass
+        # date = f'{year}-{month}-{day}' # YYYY-MM-DD
+        date_init = f'{year}-{1}-{1}'
+        date_end = f'{year}-{12}-{year.is_leap(year)}'
+        editions = request_journals(date_init, date_end)
+        
+        list_return=list()
+        for a in range(0, len(editions['diaries'])):
+
+               
+
+            edition = editions['diaries'][a]['edicao']
+            file_name = editions['diaries'][a]['arquivo']
+            list_return.append(self.dump_json())
+            download_jornal(edition, file_name)
+            print(f'nº{a}\n\n')
+
 
     @staticmethod
     def parse(response: Dict) -> List[Tuple[str, str]]:
@@ -78,6 +128,19 @@ class JournalDownloader:
     def download_all(self, editions: List[str]) -> List[str]:
         # TODO: download journals and return a list of PDF paths. download in `self.pdfs_folder` folder
         #  OBS: make the file names ordered. Example: '0.pdf', '1.pdf', ...
+        error = False
+        i = 0
+        journals = list()
+        while not error:
+            try:
+                print(i, '...')
+                print(download_jornal(i, self.pdfs_folder))
+                i += 1
+            except error:
+                error = True
+                print("End")
+
+        print(journals)
         pass
 
     def dump_json(self, pdf_path: str, edition: str, date: str) -> str:
@@ -93,4 +156,22 @@ class JournalDownloader:
         with open(output_path, 'w', encoding='utf-8') as file:
             file.write(json.dumps(data,
                                   indent=4, ensure_ascii=False))
-        return str(output_path)
+        return str(output_path) 
+
+
+
+def main():
+    Journal = JournalDownloader()
+    Journal.get_day_journals(year=2017, month=7, day=10)
+    # menu[2](self, 10)
+    # Journal.download_all(self, 10)
+    # download_mutiple_jornals(20, Journal.pdfs_folder)
+    # while True:
+    # j = request_journals('2021-01-20', '2021-02-21')
+
+    # for i in range(len(j['diaries'])):
+    #     print(j['diaries'][i]['extra'])
+
+if __name__ == "__main__":
+    main()
+        
